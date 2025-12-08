@@ -59,6 +59,27 @@ namespace RevenuQuebec.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Sessions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    DateConnexion = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    DateDeconnexion = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    UtilisateurId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Sessions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Sessions_Utilisateurs_UtilisateurId",
+                        column: x => x.UtilisateurId,
+                        principalTable: "Utilisateurs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AutresRevenus",
                 columns: table => new
                 {
@@ -198,6 +219,11 @@ namespace RevenuQuebec.Infrastructure.Migrations
                 column: "DeclarationId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Sessions_UtilisateurId",
+                table: "Sessions",
+                column: "UtilisateurId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Statuts_DeclarationId",
                 table: "Statuts",
                 column: "DeclarationId");
@@ -217,6 +243,9 @@ namespace RevenuQuebec.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "RevenusEmploi");
+
+            migrationBuilder.DropTable(
+                name: "Sessions");
 
             migrationBuilder.DropTable(
                 name: "Statuts");

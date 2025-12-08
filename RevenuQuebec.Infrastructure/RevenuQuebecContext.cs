@@ -13,6 +13,7 @@ namespace RevenuQuebec.Infrastructure
         public DbSet<AutreRevenu> AutresRevenus { get; set; }
         public DbSet<Justificatif> Justificatifs { get; set; }
         public DbSet<Status> Statuts { get; set; }
+        public DbSet<Session> Sessions { get; set; }
 
         public RevenuQuebecContext(DbContextOptions<RevenuQuebecContext> options)
             : base(options)

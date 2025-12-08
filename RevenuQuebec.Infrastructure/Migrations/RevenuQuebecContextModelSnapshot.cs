@@ -209,6 +209,30 @@ namespace RevenuQuebec.Infrastructure.Migrations
                     b.ToTable("RevenusEmploi");
                 });
 
+            modelBuilder.Entity("RevenuQuebec.Core.Entities.Session", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("DateConnexion")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("DateDeconnexion")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("UtilisateurId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UtilisateurId");
+
+                    b.ToTable("Sessions");
+                });
+
             modelBuilder.Entity("RevenuQuebec.Core.Entities.Status", b =>
                 {
                     b.Property<int>("Id")
@@ -324,6 +348,17 @@ namespace RevenuQuebec.Infrastructure.Migrations
                         .HasForeignKey("DeclarationId");
                 });
 
+            modelBuilder.Entity("RevenuQuebec.Core.Entities.Session", b =>
+                {
+                    b.HasOne("RevenuQuebec.Core.Entities.Utilisateur", "Utilisateur")
+                        .WithMany("Sessions")
+                        .HasForeignKey("UtilisateurId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Utilisateur");
+                });
+
             modelBuilder.Entity("RevenuQuebec.Core.Entities.Status", b =>
                 {
                     b.HasOne("RevenuQuebec.Core.Entities.Declaration", "Declaration")
@@ -352,6 +387,8 @@ namespace RevenuQuebec.Infrastructure.Migrations
             modelBuilder.Entity("RevenuQuebec.Core.Entities.Utilisateur", b =>
                 {
                     b.Navigation("Declarations");
+
+                    b.Navigation("Sessions");
                 });
 #pragma warning restore 612, 618
         }

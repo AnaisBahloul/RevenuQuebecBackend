@@ -9,5 +9,6 @@ namespace RevenuQuebec.Core.Interfaces
         Task UpdateDeclarationAsync(Declaration declaration);
         Task DeleteDeclaration(Declaration declaration);
         Task<Declaration> ConsulterDeclaration(int id);
+        Task<IReadOnlyList<Declaration>> ListerDeclarations();
     }
 }

@@ -18,7 +18,7 @@ namespace RevenuQuebec.Core.Entities
         public DateTime DateNaissance { get; private set; }
         public string Adresse { get; private set; }
         public string Telephone { get; private set; }
-
+        public List<Session> Sessions { get; private set; } = new List<Session>();
         public ICollection<Declaration> Declarations { get; private set; } = new List<Declaration>();
 
         private Utilisateur() { } // EF Core
@@ -45,6 +45,36 @@ namespace RevenuQuebec.Core.Entities
             Adresse = adresse;
             Telephone = telephone;
         }
+
+        public void UpdateCourriel(string nouveauCourriel)
+        {
+            if (string.IsNullOrWhiteSpace(nouveauCourriel))
+                throw new ArgumentException("Le courriel ne peut pas être vide");
+
+            Courriel = nouveauCourriel;
+        }
+
+        public void UpdateAdresse(string nouvelleAdresse)
+        {
+            Adresse = nouvelleAdresse ?? "";
+        }
+
+        public void UpdateTelephone(string nouveauTelephone)
+        {
+            Telephone = nouveauTelephone ?? "";
+        }
+
+        public void UpdateMotDePasse(string nouveauMotDePasse)
+        {
+            if (string.IsNullOrWhiteSpace(nouveauMotDePasse))
+                throw new ArgumentException("Le mot de passe ne peut pas être vide");
+
+            if (nouveauMotDePasse.Length <= 8)
+                throw new ArgumentException("Le mot de passe doit contenir plus de 8 caractères");
+
+            MotDePasse = nouveauMotDePasse;
+        }
+
 
         public bool Valider(string courriel, string motDePasse)
         {

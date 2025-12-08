@@ -1,6 +1,9 @@
 ﻿using RevenuQuebec.Core.Entities;
-using RevenuQuebec.SharedKernel.Interfaces;
+using RevenuQuebec.Core.Interfaces;
+using RevenuQuebec.Core.Services;
 using RevenuQuebec.Infrastructure;
+using RevenuQuebec.Infrastructure.Repositories;
+using RevenuQuebec.SharedKernel.Interfaces;
 //using RevenuQuebec.Infrastructure.Repositories;
 using System;
 using System.Collections.Generic;
@@ -13,9 +16,9 @@ namespace RevenuQuebec.ConsoleTestApp
     {
         static async Task Main(string[] args)
         {
-            Test1();
-            //await Test2();
-            //await Test3();
+            //Test1();
+            await Test2();
+            await Test3();
             //await Test4();
         }
 
@@ -56,7 +59,7 @@ namespace RevenuQuebec.ConsoleTestApp
             Justificatif justificatif = new Justificatif("Relevé bancaire", "https://exemple.com/releve.pdf");
             declaration1.AddJustificatif(justificatif);
 
-            // Ajouter une note dans Avis
+            // Création d'un avis
             Avis avis = new Avis(
                  type: AvisType.Personnalise,                  // Personnalise pour tester les notes
                  title: "Avis fiscal 2025",
@@ -91,7 +94,7 @@ namespace RevenuQuebec.ConsoleTestApp
         }
 
         // Test récupération simple via repository
-        /*static async Task Test2()
+        static async Task Test2()
         {
             var context = new RevenuQuebecContext();
             IAsyncRepository<Utilisateur> userRepo = new EfRepository<Utilisateur>(context);
@@ -108,11 +111,10 @@ namespace RevenuQuebec.ConsoleTestApp
         static async Task Test3()
         {
             var context = new RevenuQuebecContext();
-            // Supposons que nous avons un spécification repository
+            
             var repo = new UtilisateurRepository(context);
 
-            var users = await repo.ListByEmailAsync("anaisbahloul@example.com");
-            var user = users.FirstOrDefault();
+            var user = await repo.GetByCourrielAsync("anaisbahloul@example.com");
 
             if (user != null)
                 Console.WriteLine($"Utilisateur filtré trouvé: {user.Nom} {user.Prenom}");
@@ -141,6 +143,6 @@ namespace RevenuQuebec.ConsoleTestApp
             await userService.AddUtilisateur(newUser);
 
             Console.WriteLine("Test4: Nouvel utilisateur ajouté via le service.");
-        }*/
+        }
     }
 }
