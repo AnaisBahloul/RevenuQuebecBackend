@@ -31,5 +31,10 @@ namespace RevenuQuebec.Core.Services
         {
             return await _avisRepository.ListAllAsync();
         }
+        public async Task<List<Avis>> ListerAvisParUtilisateur(int userId)
+        {
+            return await _avisRepository.GetByUserIdAsync(userId);
+        }
+
     }
 }

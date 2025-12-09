@@ -9,6 +9,8 @@ namespace RevenuQuebec.Core.Interfaces
     {
         Task<Declaration> GetByIdCompletAsync(int id);
         Declaration GetByIdComplet(int id);
+        Task<List<Declaration>> GetDeclarationsByUserAsync(int utilisateurId);
+
     }
 
 }

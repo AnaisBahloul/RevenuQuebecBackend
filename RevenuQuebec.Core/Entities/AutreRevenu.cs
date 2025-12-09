@@ -14,6 +14,9 @@ namespace RevenuQuebec.Core.Entities
         public TypeRevenu Type { get; set; }
         public decimal Montant { get; set; }
 
+        public int DeclarationId { get; set; } // <- Ajouté
+        public Declaration Declaration { get; set; }
+
         public enum TypeRevenu
         {
             Emploi = 1,

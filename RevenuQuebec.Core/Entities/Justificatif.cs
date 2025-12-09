@@ -6,6 +6,8 @@ public class Justificatif : BaseEntity, IAggregateRoot
 {
     public string Nom { get; set; }
     public string Url { get; set; }
+    public int DeclarationId { get; set; } 
+    public Declaration Declaration { get; set; }
 
     public Justificatif() { }
 

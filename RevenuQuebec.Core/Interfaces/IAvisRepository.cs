@@ -10,5 +10,7 @@ namespace RevenuQuebec.Core.Interfaces
         Task<List<Avis>> ListAllAsync();
         Task<Avis> GetByDeclarationIdAsync(int declarationId);
         Task<Avis> GetByIdAsync(int id);
+        Task<List<Avis>> GetByUserIdAsync(int userId);
+
     }
 }

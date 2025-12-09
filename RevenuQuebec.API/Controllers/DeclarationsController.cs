@@ -65,5 +65,14 @@ namespace RevenuQuebec.API.Controllers
             await _declarationService.DeleteDeclaration(declaration);
             return NoContent();
         }
+        [HttpGet("user/{userId}")]
+        public async Task<ActionResult<IEnumerable<Declaration>>> GetByUser(int userId)
+        {
+            var declarations = await _declarationService.ListerDeclarationsParUtilisateur(userId);
+            return Ok(declarations);
+        }
+
+
+
     }
 }

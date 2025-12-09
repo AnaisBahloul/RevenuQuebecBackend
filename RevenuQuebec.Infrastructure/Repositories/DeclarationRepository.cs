@@ -37,5 +37,17 @@ namespace RevenuQuebec.Infrastructure.Repositories
                 .Include(d => d.Avis)
                 .FirstOrDefault(d => d.Id == id);
         }
+        public async Task<List<Declaration>> GetDeclarationsByUserAsync(int utilisateurId)
+        {
+            return await _dbContext.Declarations
+                .Include(d => d.Avis)
+                .Include(d => d.HistoriqueStatuts)
+                .Include(d => d.RevenusEmploi)
+                .Include(d => d.AutresRevenus)
+                .Include(d => d.Fichiers)
+                .Where(d => d.UtilisateurId == utilisateurId)
+                .ToListAsync();
+        }
+
     }
 }

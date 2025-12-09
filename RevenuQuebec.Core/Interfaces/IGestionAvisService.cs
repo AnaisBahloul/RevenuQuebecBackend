@@ -9,5 +9,7 @@ namespace RevenuQuebec.Core.Interfaces
         Task<Avis> ConsulterAvis(int id);
         Task<Avis> ConsulterAvisParDeclaration(int declarationId);
         Task<List<Avis>> ListerAvis();
+        Task<List<Avis>> ListerAvisParUtilisateur(int userId);
+
     }
 }

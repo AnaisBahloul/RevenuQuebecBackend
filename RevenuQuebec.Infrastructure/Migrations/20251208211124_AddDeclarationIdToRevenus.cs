@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace RevenuQuebec.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class AddDeclarationIdToRevenus : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -87,7 +87,7 @@ namespace RevenuQuebec.Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Type = table.Column<int>(type: "int", nullable: false),
                     Montant = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    DeclarationId = table.Column<int>(type: "int", nullable: true)
+                    DeclarationId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -96,7 +96,8 @@ namespace RevenuQuebec.Infrastructure.Migrations
                         name: "FK_AutresRevenus_Declarations_DeclarationId",
                         column: x => x.DeclarationId,
                         principalTable: "Declarations",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -138,7 +139,7 @@ namespace RevenuQuebec.Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Nom = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Url = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    DeclarationId = table.Column<int>(type: "int", nullable: true)
+                    DeclarationId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -147,7 +148,8 @@ namespace RevenuQuebec.Infrastructure.Migrations
                         name: "FK_Justificatifs_Declarations_DeclarationId",
                         column: x => x.DeclarationId,
                         principalTable: "Declarations",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -158,7 +160,7 @@ namespace RevenuQuebec.Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Employeur = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Montant = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    DeclarationId = table.Column<int>(type: "int", nullable: true)
+                    DeclarationId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -167,7 +169,8 @@ namespace RevenuQuebec.Infrastructure.Migrations
                         name: "FK_RevenusEmploi_Declarations_DeclarationId",
                         column: x => x.DeclarationId,
                         principalTable: "Declarations",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(

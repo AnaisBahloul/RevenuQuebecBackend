@@ -19,7 +19,7 @@ namespace RevenuQuebec.ConsoleTestApp
             //Test1();
             await Test2();
             await Test3();
-            //await Test4();
+            await Test4();
         }
 
         // Test création et ajout d'entités

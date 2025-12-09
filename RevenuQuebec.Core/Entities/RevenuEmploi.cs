@@ -13,6 +13,9 @@ namespace RevenuQuebec.Core.Entities
         public string Employeur { get; set; }
         public decimal Montant { get; set; }
 
+        public int DeclarationId { get; set; } // <- Ajouté
+        public Declaration Declaration { get; set; }
+
         public RevenuEmploi() { }
 
         public RevenuEmploi(string employeur, decimal montant)

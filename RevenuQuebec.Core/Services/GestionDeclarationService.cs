@@ -37,5 +37,12 @@ namespace RevenuQuebec.Core.Services
         {
             return await _declarationRepository.ListAllAsync();
         }
+
+        public async Task<List<Declaration>> ListerDeclarationsParUtilisateur(int utilisateurId)
+        {
+            return await _declarationRepository.GetDeclarationsByUserAsync(utilisateurId);
+        }
+
+
     }
 }

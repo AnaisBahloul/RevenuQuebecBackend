@@ -30,7 +30,7 @@ namespace RevenuQuebec.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("DeclarationId")
+                    b.Property<int>("DeclarationId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Montant")
@@ -165,7 +165,7 @@ namespace RevenuQuebec.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("DeclarationId")
+                    b.Property<int>("DeclarationId")
                         .HasColumnType("int");
 
                     b.Property<string>("Nom")
@@ -191,7 +191,7 @@ namespace RevenuQuebec.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("DeclarationId")
+                    b.Property<int>("DeclarationId")
                         .HasColumnType("int");
 
                     b.Property<string>("Employeur")
@@ -307,9 +307,13 @@ namespace RevenuQuebec.Infrastructure.Migrations
 
             modelBuilder.Entity("RevenuQuebec.Core.Entities.AutreRevenu", b =>
                 {
-                    b.HasOne("RevenuQuebec.Core.Entities.Declaration", null)
+                    b.HasOne("RevenuQuebec.Core.Entities.Declaration", "Declaration")
                         .WithMany("AutresRevenus")
-                        .HasForeignKey("DeclarationId");
+                        .HasForeignKey("DeclarationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Declaration");
                 });
 
             modelBuilder.Entity("RevenuQuebec.Core.Entities.Avis", b =>
@@ -336,16 +340,24 @@ namespace RevenuQuebec.Infrastructure.Migrations
 
             modelBuilder.Entity("RevenuQuebec.Core.Entities.Justificatif", b =>
                 {
-                    b.HasOne("RevenuQuebec.Core.Entities.Declaration", null)
+                    b.HasOne("RevenuQuebec.Core.Entities.Declaration", "Declaration")
                         .WithMany("Fichiers")
-                        .HasForeignKey("DeclarationId");
+                        .HasForeignKey("DeclarationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Declaration");
                 });
 
             modelBuilder.Entity("RevenuQuebec.Core.Entities.RevenuEmploi", b =>
                 {
-                    b.HasOne("RevenuQuebec.Core.Entities.Declaration", null)
+                    b.HasOne("RevenuQuebec.Core.Entities.Declaration", "Declaration")
                         .WithMany("RevenusEmploi")
-                        .HasForeignKey("DeclarationId");
+                        .HasForeignKey("DeclarationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Declaration");
                 });
 
             modelBuilder.Entity("RevenuQuebec.Core.Entities.Session", b =>

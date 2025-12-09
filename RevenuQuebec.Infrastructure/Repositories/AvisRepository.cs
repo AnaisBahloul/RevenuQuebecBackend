@@ -2,6 +2,7 @@
 using RevenuQuebec.Core.Entities;
 using RevenuQuebec.Core.Interfaces;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace RevenuQuebec.Infrastructure.Repositories
@@ -20,7 +21,39 @@ namespace RevenuQuebec.Infrastructure.Repositories
         public async Task<List<Avis>> ListAllAsync()
         {
             return await _dbContext.Avis
-                .Include(a => a.Declaration) // inclut la déclaration liée
+                .Include(a => a.Declaration)
+                    .ThenInclude(d => d.Utilisateur)
+                .Include(a => a.Declaration)
+                    .ThenInclude(d => d.RevenusEmploi)
+                .Include(a => a.Declaration)
+                    .ThenInclude(d => d.AutresRevenus)
+                .ToListAsync();
+        }
+
+        // Récupérer un avis par Id
+        public async Task<Avis> GetByIdAsync(int id)
+        {
+            return await _dbContext.Avis
+                .Include(a => a.Declaration)
+                    .ThenInclude(d => d.Utilisateur)
+                .Include(a => a.Declaration)
+                    .ThenInclude(d => d.RevenusEmploi)
+                .Include(a => a.Declaration)
+                    .ThenInclude(d => d.AutresRevenus)
+                .FirstOrDefaultAsync(a => a.Id == id);
+        }
+
+        // Récupérer les avis d'un utilisateur
+        public async Task<List<Avis>> GetByUserIdAsync(int userId)
+        {
+            return await _dbContext.Avis
+                .Include(a => a.Declaration)
+                    .ThenInclude(d => d.Utilisateur)
+                .Include(a => a.Declaration)
+                    .ThenInclude(d => d.RevenusEmploi)
+                .Include(a => a.Declaration)
+                    .ThenInclude(d => d.AutresRevenus)
+                .Where(a => a.Declaration.UtilisateurId == userId)
                 .ToListAsync();
         }
 
@@ -29,15 +62,12 @@ namespace RevenuQuebec.Infrastructure.Repositories
         {
             return await _dbContext.Avis
                 .Include(a => a.Declaration)
-                .FirstOrDefaultAsync(a => a.DeclarationId == declarationId);
-        }
-
-        // Récupérer un avis par Id
-        public async Task<Avis> GetByIdAsync(int id)
-        {
-            return await _dbContext.Avis
+                    .ThenInclude(d => d.Utilisateur)
                 .Include(a => a.Declaration)
-                .FirstOrDefaultAsync(a => a.Id == id);
+                    .ThenInclude(d => d.RevenusEmploi)
+                .Include(a => a.Declaration)
+                    .ThenInclude(d => d.AutresRevenus)
+                .FirstOrDefaultAsync(a => a.DeclarationId == declarationId);
         }
     }
 }
