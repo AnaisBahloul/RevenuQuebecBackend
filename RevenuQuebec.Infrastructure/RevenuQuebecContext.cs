@@ -36,6 +36,14 @@ namespace RevenuQuebec.Infrastructure
             modelBuilder.Entity<RevenuEmploi>()
                 .Property(re => re.Montant)
                 .HasPrecision(18, 2);
+           
+            
+            
+            modelBuilder.Entity<Declaration>()
+    .HasOne(d => d.Avis)
+    .WithOne(a => a.Declaration)
+    .HasForeignKey<Declaration>(d => d.AvisId);
+
         }
 
     }

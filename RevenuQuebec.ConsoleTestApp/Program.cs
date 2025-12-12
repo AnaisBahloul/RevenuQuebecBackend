@@ -16,7 +16,7 @@ namespace RevenuQuebec.ConsoleTestApp
     {
         static async Task Main(string[] args)
         {
-            //Test1();
+            Test1();
             await Test2();
             await Test3();
             await Test4();

@@ -2,6 +2,7 @@
 using RevenuQuebec.SharedKernel.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace RevenuQuebec.Core.Entities
 {
@@ -23,106 +24,144 @@ namespace RevenuQuebec.Core.Entities
         // Validation
         public bool ConfirmationExactitude { get; set; }
 
-        // Tracking
-        public DateTime DateSoumission { get; set; } = DateTime.UtcNow;
+        // État
         public bool EstBrouillon { get; set; } = false;
 
-        public Avis Avis {  get; set; }
+        public DateTime? DateSoumission { get; set; } = DateTime.UtcNow;
+
+       
+        [JsonIgnore]
+        public Avis Avis { get; set; }
+        public int? AvisId { get; set; }
+
         // User
         public int UtilisateurId { get; set; }
+
+        [JsonIgnore]
         public Utilisateur Utilisateur { get; set; }
 
-        //  ÉTAT ACTUEL (pour tableau historique)
+        // ÉTAT ACTUEL
         public DeclarationStatus Etat { get; set; }
 
-        // TIMELINE COMPLETE (chaque item = une étape)
+        // Historique des statuts
         public List<Status> HistoriqueStatuts { get; set; } = new();
 
-        // --- Domain logic ---
-        public void ChangerEtat(DeclarationStatus nouveauStatut, string message)
-        {
-            Etat = nouveauStatut;
-
-            HistoriqueStatuts.Add(new Status
-            {
-                DeclarationId = Id,
-                Etat = nouveauStatut,
-                DateEvenement = DateTime.UtcNow,
-                Message = message
-            });
-        }
-
-        // Constructeur par défaut
+       
         public Declaration() { }
-
-        // Constructeur avec paramètres principaux
         public Declaration(string adresse, string email, string telephone, string citoyennete)
         {
             Adresse = adresse;
             Email = email;
             Telephone = telephone;
             Citoyennete = citoyennete;
-          
         }
 
-        //  Business rule simple pour UI tableau
-        public string EtatPourTableau()
+
+
+        // Changer l'état et ajouter à l'historique
+        public void ChangerEtat(DeclarationStatus nouveauStatut, string message)
         {
-            return Etat == DeclarationStatus.Cloturee
-                ? "Traitée"
-                : "En traitement";
+            Etat = nouveauStatut;
+
+            HistoriqueStatuts.Add(new Status
+            {
+                Etat = nouveauStatut,
+                DateEvenement = DateTime.UtcNow,
+                Message = message
+            });
         }
 
+
+        // Pour l'affichage dans le tableau
+        public string GetEtatAffichage()
+        {
+            return Etat switch
+            {
+                DeclarationStatus.Brouillon => "Brouillon",
+                DeclarationStatus.Cloturee => "Traitée",
+                DeclarationStatus.EnRevisionParAgent => "En révision",
+                DeclarationStatus.ValideeAutomatiquement => "Validée automatiquement",
+                DeclarationStatus.Recu => "Reçue",
+                _ => "En traitement"
+            };
+        }
+
+        // Pour soumettre un brouillon
+        public void SoumettreBrouillon()
+        {
+            if (!EstBrouillon) return;
+
+            EstBrouillon = false;
+            DateSoumission = DateTime.UtcNow;
+            ChangerEtat(DeclarationStatus.Recu, "Déclaration soumise par l'utilisateur");
+        }
 
         public void AddRevenuEmploi(RevenuEmploi revenu)
         {
-            if (revenu != null)
+            if (revenu != null)  
+            {
+                revenu.DeclarationId = Id;
                 RevenusEmploi.Add(revenu);
+            }
         }
 
         public void RemoveRevenuEmploi(RevenuEmploi revenu)
         {
             if (revenu != null && RevenusEmploi.Contains(revenu))
+            {
                 RevenusEmploi.Remove(revenu);
+            }
         }
 
         public void AddAutreRevenu(AutreRevenu revenu)
         {
-            if (revenu != null)
+            if (revenu != null)  
+            {
+                revenu.DeclarationId = Id;
                 AutresRevenus.Add(revenu);
+            }
         }
 
         public void RemoveAutreRevenu(AutreRevenu revenu)
         {
             if (revenu != null && AutresRevenus.Contains(revenu))
+            {
                 AutresRevenus.Remove(revenu);
+            }
         }
 
         public void AddJustificatif(Justificatif justificatif)
         {
-            if (justificatif != null)
+            if (justificatif != null)  
+            {
+                justificatif.DeclarationId = Id;
                 Fichiers.Add(justificatif);
+            }
         }
 
         public void RemoveJustificatif(Justificatif justificatif)
         {
             if (justificatif != null && Fichiers.Contains(justificatif))
+            {
                 Fichiers.Remove(justificatif);
+            }
         }
 
         public void AddStatus(Status statut)
         {
-            if (statut != null)
+            if (statut != null) 
+            {
+                statut.DeclarationId = Id;
                 HistoriqueStatuts.Add(statut);
+            }
         }
 
         public void RemoveStatus(Status statut)
         {
             if (statut != null && HistoriqueStatuts.Contains(statut))
+            {
                 HistoriqueStatuts.Remove(statut);
+            }
         }
-
-
-
     }
 }

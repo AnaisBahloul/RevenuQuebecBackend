@@ -48,6 +48,13 @@ namespace RevenuQuebec.Infrastructure.Repositories
                 .Where(d => d.UtilisateurId == utilisateurId)
                 .ToListAsync();
         }
+        public async Task<Declaration> GetBrouillonParUtilisateurAsync(int utilisateurId)
+        {
+            return await _dbContext.Declarations
+                .Where(d => d.UtilisateurId == utilisateurId && d.EstBrouillon)
+                .OrderByDescending(d => d.Id)
+                .FirstOrDefaultAsync();
+        }
 
     }
 }

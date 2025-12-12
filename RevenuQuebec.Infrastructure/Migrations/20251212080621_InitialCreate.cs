@@ -6,11 +6,36 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace RevenuQuebec.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AddDeclarationIdToRevenus : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Avis",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    DeclarationId = table.Column<int>(type: "int", nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false),
+                    RequiresAgentReview = table.Column<bool>(type: "bit", nullable: false),
+                    GenerationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RefNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Year = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Amount = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TaxableIncome = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Deductions = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    NetTax = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AmountPayable = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AdjustmentNotes = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Avis", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Utilisateurs",
                 columns: table => new
@@ -42,14 +67,20 @@ namespace RevenuQuebec.Infrastructure.Migrations
                     Telephone = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Citoyennete = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ConfirmationExactitude = table.Column<bool>(type: "bit", nullable: false),
-                    DateSoumission = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EstBrouillon = table.Column<bool>(type: "bit", nullable: false),
+                    DateSoumission = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    AvisId = table.Column<int>(type: "int", nullable: true),
                     UtilisateurId = table.Column<int>(type: "int", nullable: false),
                     Etat = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Declarations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Declarations_Avis_AvisId",
+                        column: x => x.AvisId,
+                        principalTable: "Avis",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Declarations_Utilisateurs_UtilisateurId",
                         column: x => x.UtilisateurId,
@@ -94,37 +125,6 @@ namespace RevenuQuebec.Infrastructure.Migrations
                     table.PrimaryKey("PK_AutresRevenus", x => x.Id);
                     table.ForeignKey(
                         name: "FK_AutresRevenus_Declarations_DeclarationId",
-                        column: x => x.DeclarationId,
-                        principalTable: "Declarations",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Avis",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    DeclarationId = table.Column<int>(type: "int", nullable: false),
-                    Type = table.Column<int>(type: "int", nullable: false),
-                    RequiresAgentReview = table.Column<bool>(type: "bit", nullable: false),
-                    GenerationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RefNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Year = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Amount = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TaxableIncome = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Deductions = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    NetTax = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AmountPayable = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AdjustmentNotes = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Avis", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Avis_Declarations_DeclarationId",
                         column: x => x.DeclarationId,
                         principalTable: "Declarations",
                         principalColumn: "Id",
@@ -201,10 +201,11 @@ namespace RevenuQuebec.Infrastructure.Migrations
                 column: "DeclarationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Avis_DeclarationId",
-                table: "Avis",
-                column: "DeclarationId",
-                unique: true);
+                name: "IX_Declarations_AvisId",
+                table: "Declarations",
+                column: "AvisId",
+                unique: true,
+                filter: "[AvisId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Declarations_UtilisateurId",
@@ -239,9 +240,6 @@ namespace RevenuQuebec.Infrastructure.Migrations
                 name: "AutresRevenus");
 
             migrationBuilder.DropTable(
-                name: "Avis");
-
-            migrationBuilder.DropTable(
                 name: "Justificatifs");
 
             migrationBuilder.DropTable(
@@ -255,6 +253,9 @@ namespace RevenuQuebec.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Declarations");
+
+            migrationBuilder.DropTable(
+                name: "Avis");
 
             migrationBuilder.DropTable(
                 name: "Utilisateurs");

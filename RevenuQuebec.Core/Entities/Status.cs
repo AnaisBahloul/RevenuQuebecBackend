@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using static RevenuQuebec.Core.Entities.Declaration;
 
@@ -12,6 +13,7 @@ namespace RevenuQuebec.Core.Entities
     public class Status : BaseEntity, IAggregateRoot
     {
         public int DeclarationId { get; set; }
+        [JsonIgnore]
         public Declaration Declaration { get; set; }
 
         // Étape atteinte
@@ -36,10 +38,11 @@ namespace RevenuQuebec.Core.Entities
 
     public enum DeclarationStatus
     {
-        Recu,
-        ValideeAutomatiquement,
-        EnRevisionParAgent,
-        Cloturee
+        Brouillon = 0,
+        Recu = 1,
+        ValideeAutomatiquement = 2,
+        EnRevisionParAgent = 3,
+        Cloturee = 4
     }
 
 

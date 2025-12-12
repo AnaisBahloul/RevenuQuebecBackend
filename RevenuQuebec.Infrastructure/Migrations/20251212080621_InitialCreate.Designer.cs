@@ -12,8 +12,8 @@ using RevenuQuebec.Infrastructure;
 namespace RevenuQuebec.Infrastructure.Migrations
 {
     [DbContext(typeof(RevenuQuebecContext))]
-    [Migration("20251208211124_AddDeclarationIdToRevenus")]
-    partial class AddDeclarationIdToRevenus
+    [Migration("20251212080621_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -108,9 +108,6 @@ namespace RevenuQuebec.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DeclarationId")
-                        .IsUnique();
-
                     b.ToTable("Avis");
                 });
 
@@ -126,6 +123,9 @@ namespace RevenuQuebec.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("AvisId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Citoyennete")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -133,7 +133,7 @@ namespace RevenuQuebec.Infrastructure.Migrations
                     b.Property<bool>("ConfirmationExactitude")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("DateSoumission")
+                    b.Property<DateTime?>("DateSoumission")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
@@ -154,6 +154,10 @@ namespace RevenuQuebec.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AvisId")
+                        .IsUnique()
+                        .HasFilter("[AvisId] IS NOT NULL");
 
                     b.HasIndex("UtilisateurId");
 
@@ -319,24 +323,19 @@ namespace RevenuQuebec.Infrastructure.Migrations
                     b.Navigation("Declaration");
                 });
 
-            modelBuilder.Entity("RevenuQuebec.Core.Entities.Avis", b =>
-                {
-                    b.HasOne("RevenuQuebec.Core.Entities.Declaration", "Declaration")
-                        .WithOne("Avis")
-                        .HasForeignKey("RevenuQuebec.Core.Entities.Avis", "DeclarationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Declaration");
-                });
-
             modelBuilder.Entity("RevenuQuebec.Core.Entities.Declaration", b =>
                 {
+                    b.HasOne("RevenuQuebec.Core.Entities.Avis", "Avis")
+                        .WithOne("Declaration")
+                        .HasForeignKey("RevenuQuebec.Core.Entities.Declaration", "AvisId");
+
                     b.HasOne("RevenuQuebec.Core.Entities.Utilisateur", "Utilisateur")
                         .WithMany("Declarations")
                         .HasForeignKey("UtilisateurId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Avis");
 
                     b.Navigation("Utilisateur");
                 });
@@ -385,12 +384,15 @@ namespace RevenuQuebec.Infrastructure.Migrations
                     b.Navigation("Declaration");
                 });
 
+            modelBuilder.Entity("RevenuQuebec.Core.Entities.Avis", b =>
+                {
+                    b.Navigation("Declaration")
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("RevenuQuebec.Core.Entities.Declaration", b =>
                 {
                     b.Navigation("AutresRevenus");
-
-                    b.Navigation("Avis")
-                        .IsRequired();
 
                     b.Navigation("Fichiers");
 

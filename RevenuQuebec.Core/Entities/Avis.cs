@@ -2,12 +2,14 @@
 using RevenuQuebec.SharedKernel.Interfaces;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace RevenuQuebec.Core.Entities
 {
     public class Avis : BaseEntity, IAggregateRoot
     {
         public int DeclarationId { get; set; }
+        [JsonIgnore]
         public Declaration Declaration { get; set; }
 
         [NotMapped]
@@ -21,9 +23,6 @@ namespace RevenuQuebec.Core.Entities
         public string RefNumber { get; set; }
         public string Year { get; set; }
         public string Amount { get; set; }
-
-        //public List<RevenuEmploi> RevenusEmploi { get; set; } = new();
-        //public List<AutreRevenu> AutresRevenus { get; set; } = new();
         public string TaxableIncome { get; set; }
         public string Deductions { get; set; }
         public string NetTax { get; set; }
@@ -50,7 +49,7 @@ namespace RevenuQuebec.Core.Entities
 
         // Constructeur avec paramètres principaux
         public Avis(AvisType type, string title, string year, string refNumber, string amount, bool requiresAgentReview,
-                    string taxableIncome = null, string deductions = null, string netTax = null, string amountPayable = null)
+                    string taxableIncome, string deductions, string netTax, string amountPayable)
         { 
             Type = type;
             Title = title;
