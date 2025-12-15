@@ -16,10 +16,10 @@ namespace RevenuQuebec.ConsoleTestApp
     {
         static async Task Main(string[] args)
         {
-            Test1();
-            await Test2();
-            await Test3();
-            await Test4();
+            //Test1();
+            //await Test2();
+            //await Test3();
+            //await Test4();
         }
 
         // Test création et ajout d'entités

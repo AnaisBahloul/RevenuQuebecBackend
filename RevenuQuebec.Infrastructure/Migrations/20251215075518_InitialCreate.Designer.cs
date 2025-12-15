@@ -12,7 +12,7 @@ using RevenuQuebec.Infrastructure;
 namespace RevenuQuebec.Infrastructure.Migrations
 {
     [DbContext(typeof(RevenuQuebecContext))]
-    [Migration("20251215033238_InitialCreate")]
+    [Migration("20251215075518_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
