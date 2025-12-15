@@ -42,7 +42,7 @@ namespace RevenuQuebec.Core.Entities
         Recu = 1,
         ValideeAutomatiquement = 2,
         EnRevisionParAgent = 3,
-        Cloturee = 4
+        Traitee = 4
     }
 
 

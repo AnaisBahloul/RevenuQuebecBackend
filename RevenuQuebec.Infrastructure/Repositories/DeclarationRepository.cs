@@ -51,6 +51,10 @@ namespace RevenuQuebec.Infrastructure.Repositories
         public async Task<Declaration> GetBrouillonParUtilisateurAsync(int utilisateurId)
         {
             return await _dbContext.Declarations
+                .Include(d => d.RevenusEmploi)        
+                .Include(d => d.AutresRevenus)      
+                .Include(d => d.Fichiers)           
+                .Include(d => d.HistoriqueStatuts)   
                 .Where(d => d.UtilisateurId == utilisateurId && d.EstBrouillon)
                 .OrderByDescending(d => d.Id)
                 .FirstOrDefaultAsync();

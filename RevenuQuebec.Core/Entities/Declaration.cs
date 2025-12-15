@@ -78,7 +78,7 @@ namespace RevenuQuebec.Core.Entities
             return Etat switch
             {
                 DeclarationStatus.Brouillon => "Brouillon",
-                DeclarationStatus.Cloturee => "Traitée",
+                DeclarationStatus.Traitee => "Traitée",
                 DeclarationStatus.EnRevisionParAgent => "En révision",
                 DeclarationStatus.ValideeAutomatiquement => "Validée automatiquement",
                 DeclarationStatus.Recu => "Reçue",
@@ -93,7 +93,7 @@ namespace RevenuQuebec.Core.Entities
 
             EstBrouillon = false;
             DateSoumission = DateTime.UtcNow;
-            ChangerEtat(DeclarationStatus.Recu, "Déclaration soumise par l'utilisateur");
+            ChangerEtat(DeclarationStatus.Recu, "Déclaration soumise");
         }
 
         public void AddRevenuEmploi(RevenuEmploi revenu)

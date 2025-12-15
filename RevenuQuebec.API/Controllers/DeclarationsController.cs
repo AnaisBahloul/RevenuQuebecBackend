@@ -121,15 +121,16 @@ namespace RevenuQuebec.API.Controllers
 
                  */
 
-                // Ajouter les revenus
+                // Ajouter les revenus - VERSION POUR BROUILLONS (accepte les vides)
                 if (request.RevenusEmploi != null)
                 {
                     foreach (var revenu in request.RevenusEmploi)
                     {
-                        if (!string.IsNullOrWhiteSpace(revenu.Employeur))
-                        {
-                            declaration.AddRevenuEmploi(new RevenuEmploi(revenu.Employeur, revenu.Montant));
-                        }
+                        // POUR LES BROUILLONS : AJOUTE TOUT, même les lignes vides
+                        declaration.AddRevenuEmploi(new RevenuEmploi(
+                            revenu.Employeur ?? "",  // Garde string vide si null
+                            revenu.Montant
+                        ));
                     }
                 }
 
@@ -137,10 +138,9 @@ namespace RevenuQuebec.API.Controllers
                 {
                     foreach (var revenu in request.AutresRevenus)
                     {
-                        if (revenu.Type != null)
-                        {
-                            declaration.AddAutreRevenu(new AutreRevenu(revenu.Type.Value, revenu.Montant));
-                        }
+                        // POUR LES BROUILLONS : AJOUTE TOUT, même si Type est null
+                        var type = revenu.Type ?? AutreRevenu.TypeRevenu.Autre;
+                        declaration.AddAutreRevenu(new AutreRevenu(type, revenu.Montant));
                     }
                 }
 
@@ -186,13 +186,15 @@ namespace RevenuQuebec.API.Controllers
                 DeclarationStatus.Brouillon => currentStep.HasValue
                     ? $"Étape {currentStep} sauvegardée"
                     : "Déclaration créée comme brouillon",
-                DeclarationStatus.Recu => "Déclaration soumise",
-                DeclarationStatus.ValideeAutomatiquement => "Déclaration validée automatiquement",
-                DeclarationStatus.EnRevisionParAgent => "Déclaration mise en révision par un agent",
-                DeclarationStatus.Cloturee => "Déclaration clôturée",
+                // Utilise les mêmes messages que GetDefaultMessage()
+                DeclarationStatus.Recu => "Déclaration soumise avec succès",
+                DeclarationStatus.ValideeAutomatiquement => "Validation automatique terminée",
+                DeclarationStatus.EnRevisionParAgent => "Examen par un agent en cours",
+                DeclarationStatus.Traitee => "Déclaration traitée et clôturée",
                 _ => "État défini"
             };
         }
+
 
         // Méthode helper pour le message de succès
         private string GetSuccessMessage(DeclarationStatus etat)
@@ -203,7 +205,7 @@ namespace RevenuQuebec.API.Controllers
                 DeclarationStatus.Recu => "Déclaration soumise",
                 DeclarationStatus.ValideeAutomatiquement => "Déclaration validée automatiquement",
                 DeclarationStatus.EnRevisionParAgent => "Déclaration mise en révision par un agent",
-                DeclarationStatus.Cloturee => "Déclaration clôturée",
+                DeclarationStatus.Traitee => "Déclaration traitée",
                 _ => "Déclaration créée"
             };
         }
@@ -391,7 +393,314 @@ namespace RevenuQuebec.API.Controllers
                 return StatusCode(500, new { message = "Erreur serveur", details = ex.Message });
             }
         }
+
+
+        // 6. SUPPRIMER un brouillon
+        [HttpDelete("brouillon/{utilisateurId}")]
+        public async Task<IActionResult> DeleteBrouillon(int utilisateurId)
+        {
+            try
+            {
+                var brouillon = await _declarationRepository.GetBrouillonParUtilisateurAsync(utilisateurId);
+
+                if (brouillon == null)
+                    return NotFound(new { message = "Aucun brouillon trouvé" });
+
+                if (!brouillon.EstBrouillon)
+                    return BadRequest(new { message = "Cette déclaration n'est pas un brouillon" });
+
+                // CORRECTION : Passe l'objet brouillon, pas l'ID
+                await _declarationRepository.DeleteAsync(brouillon);
+
+                return Ok(new { message = "Brouillon supprimé avec succès" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Erreur serveur", details = ex.Message });
+            }
+        }
+
+        // 7. METTRE À JOUR un brouillon existant - VERSION CORRIGÉE
+        [HttpPut("brouillon/{id}")]
+        public async Task<IActionResult> UpdateBrouillon(int id, [FromBody] UpdateDeclarationRequest request)
+        {
+            try
+            {
+                // Récupérer le brouillon existant avec toutes les relations
+                var brouillon = await _declarationRepository.GetByIdCompletAsync(id);
+                if (brouillon == null)
+                    return NotFound(new { message = "Brouillon non trouvé" });
+
+                if (!brouillon.EstBrouillon)
+                    return BadRequest(new { message = "Cette déclaration n'est pas un brouillon" });
+
+                // Mettre à jour les champs de base seulement si fournis
+                if (!string.IsNullOrWhiteSpace(request.Adresse))
+                    brouillon.Adresse = request.Adresse;
+
+                if (!string.IsNullOrWhiteSpace(request.Email))
+                    brouillon.Email = request.Email;
+
+                if (!string.IsNullOrWhiteSpace(request.Telephone))
+                    brouillon.Telephone = request.Telephone;
+
+                if (!string.IsNullOrWhiteSpace(request.Citoyennete))
+                    brouillon.Citoyennete = request.Citoyennete;
+
+                brouillon.ConfirmationExactitude = request.ConfirmationExactitude;
+                brouillon.RevenusEmploi.Clear();
+
+                if (request.RevenusEmploi != null)
+                {
+                    foreach (var revenu in request.RevenusEmploi)
+                    {
+                        // POUR LES BROUILLONS : AJOUTE TOUT
+                        brouillon.AddRevenuEmploi(new RevenuEmploi(
+                            revenu.Employeur ?? "",
+                            revenu.Montant
+                        ));
+                    }
+                }
+
+                // 2. AUTRES REVENUS - Remplacer SIMPLEMENT
+                brouillon.AutresRevenus.Clear();
+                if (request.AutresRevenus != null)
+                {
+                    foreach (var revenu in request.AutresRevenus)
+                    {
+                        var type = revenu.Type ?? AutreRevenu.TypeRevenu.Autre;
+                        brouillon.AddAutreRevenu(new AutreRevenu(type, revenu.Montant));
+                    }
+                }
+
+
+
+                // Mettre à jour les fichiers
+
+                brouillon.Fichiers.Clear();
+                if (request.Fichiers != null)
+                {
+                    foreach (var fichier in request.Fichiers)
+                    {
+                        if (!string.IsNullOrWhiteSpace(fichier.Nom))
+                        {
+                            brouillon.AddJustificatif(new Justificatif(fichier.Nom, fichier.Url ?? ""));
+                        }
+                    }
+                }
+
+                // Mettre à jour l'étape
+                if (request.CurrentStep.HasValue)
+                {
+                    // Ajouter un statut pour l'étape
+                    brouillon.AddStatus(new Status(
+                        DeclarationStatus.Brouillon,
+                        $"Étape {request.CurrentStep} sauvegardée"
+                    ));
+                }
+
+                // Sauvegarder les modifications
+                await _declarationRepository.UpdateAsync(brouillon);
+
+                return Ok(new
+                {
+                    id = brouillon.Id,
+                    message = "Brouillon mis à jour",
+                    estBrouillon = brouillon.EstBrouillon,
+                    etat = brouillon.GetEtatAffichage(),
+                    currentStep = request.CurrentStep
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Erreur serveur", details = ex.Message });
+            }
+        }
+
+        // 8. RÉCUPÉRER l'historique des statuts d'une déclaration
+        [HttpGet("{id}/historique")]
+        public async Task<IActionResult> GetHistoriqueStatuts(int id)
+        {
+            try
+            {
+                var declaration = await _declarationRepository.GetByIdCompletAsync(id);
+                if (declaration == null)
+                    return NotFound(new { message = "Déclaration non trouvée" });
+
+                // Filtrer pour exclure les statuts "Brouillon" (optionnel)
+                var statuts = declaration.HistoriqueStatuts
+                    .Where(s => s.Etat != DeclarationStatus.Brouillon)
+                    .OrderBy(s => s.DateEvenement)
+                    .Select(s => new
+                    {
+                        etat = s.Etat.ToString(),
+                        etatAffichage = GetEtatAffichage(s.Etat),
+                        date = s.DateEvenement.ToString("yyyy-MM-dd HH:mm"),
+                        dateSimple = s.DateEvenement.ToString("yyyy-MM-dd"),
+                        message = s.Message ?? GetDefaultMessage(s.Etat),
+                        icon = GetIconForStatus(s.Etat),
+                        color = GetColorForStatus(s.Etat)
+                    })
+                    .ToList();
+
+                // S'assurer qu'on retourne au moins le statut actuel si l'historique est vide
+                if (statuts.Count == 0 && declaration.Etat != DeclarationStatus.Brouillon)
+                {
+                    statuts.Add(new
+                    {
+                        etat = declaration.Etat.ToString(),
+                        etatAffichage = GetEtatAffichage(declaration.Etat),
+                        date = declaration.DateSoumission?.ToString("yyyy-MM-dd HH:mm") ?? DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm"),
+                        dateSimple = declaration.DateSoumission?.ToString("yyyy-MM-dd") ?? DateTime.UtcNow.ToString("yyyy-MM-dd"),
+                        message = "Déclaration en cours de traitement",
+                        icon = GetIconForStatus(declaration.Etat),
+                        color = GetColorForStatus(declaration.Etat)
+                    });
+                }
+
+                return Ok(new
+                {
+                    id = declaration.Id,
+                    etatActuel = declaration.GetEtatAffichage(),
+                    dateSoumission = declaration.DateSoumission?.ToString("yyyy-MM-dd"),
+                    statuts = statuts,
+                    dernierMessage = statuts.LastOrDefault()?.message,
+                    // AJOUTER : indiquer si c'est un vrai historique ou généré
+                    isRealHistorique = declaration.HistoriqueStatuts.Any(s => s.Etat != DeclarationStatus.Brouillon)
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Erreur serveur", details = ex.Message });
+            }
+        }
+
+        // 9. ENDPOINT DE TEST : Ajouter manuellement un statut avec message par défaut
+        [HttpPost("{id}/ajouter-statut-test")]
+        public async Task<IActionResult> AjouterStatutTest(int id, [FromBody] AjouterStatutTestRequest request)
+        {
+            try
+            {
+                var declaration = await _declarationRepository.GetByIdCompletAsync(id);
+                if (declaration == null)
+                    return NotFound(new { message = "Déclaration non trouvée" });
+
+                // Vérifier si l'état fourni est valide (1, 2, 3, 4)
+                if (request.Etat < 1 || request.Etat > 4)
+                {
+                    return BadRequest(new
+                    {
+                        message = "État invalide. Utilisez : 1=Reçu, 2=ValidéeAuto, 3=EnRevision, 4=Traitée",
+                        etatsValides = new[] { 1, 2, 3, 4 }
+                    });
+                }
+
+                // Convertir l'entier en enum
+                var etat = (DeclarationStatus)request.Etat;
+
+                // Utiliser le message par défaut correspondant à l'état
+                var message = GetDefaultMessage(etat);
+
+                // Mettre à jour l'état actuel de la déclaration
+                declaration.Etat = etat;
+
+                // Ajouter le statut à l'historique
+                var statut = new Status(etat, message);
+
+                // Si une date est fournie, l'utiliser (sinon DateTime.UtcNow par défaut)
+                if (request.DateEvenement.HasValue)
+                {
+                    statut.DateEvenement = request.DateEvenement.Value;
+                }
+
+                declaration.AddStatus(statut);
+
+                // Sauvegarder les modifications
+                await _declarationRepository.UpdateAsync(declaration);
+
+                return Ok(new
+                {
+                    message = "Statut ajouté avec succès",
+                    declarationId = declaration.Id,
+                    etatActuel = declaration.GetEtatAffichage(),
+                    etatCode = (int)declaration.Etat,
+                    statutAjoute = new
+                    {
+                        etat = statut.Etat.ToString(),
+                        etatAffichage = GetEtatAffichage(statut.Etat),
+                        date = statut.DateEvenement.ToString("yyyy-MM-dd HH:mm"),
+                        message = statut.Message,
+                        icon = GetIconForStatus(statut.Etat),
+                        color = GetColorForStatus(statut.Etat)
+                    },
+                    historiqueCount = declaration.HistoriqueStatuts
+                        .Count(s => s.Etat != DeclarationStatus.Brouillon)
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Erreur serveur", details = ex.Message });
+            }
+        }
+    
+
+        // Helper pour les messages par défaut
+        private string GetDefaultMessage(DeclarationStatus etat)
+        {
+            return etat switch
+            {
+                DeclarationStatus.Recu => "Déclaration soumise avec succès",
+                DeclarationStatus.ValideeAutomatiquement => "Validation automatique terminée",
+                DeclarationStatus.EnRevisionParAgent => "Examen par un agent en cours",
+                DeclarationStatus.Traitee => "Déclaration traitée et clôturée",
+                _ => "État mis à jour"
+            };
+        }
+
+        // Helper pour les icônes
+        private string GetIconForStatus(DeclarationStatus etat)
+        {
+            return etat switch
+            {
+                DeclarationStatus.Recu => "✓",
+                DeclarationStatus.ValideeAutomatiquement => "…",
+                DeclarationStatus.EnRevisionParAgent => "•",
+                DeclarationStatus.Traitee => "✓",
+                _ => "○"
+            };
+        }
+
+        // Helper pour les couleurs
+        private string GetColorForStatus(DeclarationStatus etat)
+        {
+            return etat switch
+            {
+                DeclarationStatus.Recu => "success",
+                DeclarationStatus.ValideeAutomatiquement => "warning",
+                DeclarationStatus.EnRevisionParAgent => "primary",
+                DeclarationStatus.Traitee => "success",
+                _ => "secondary"
+            };
+        }
+
+        // Helper pour l'affichage de l'état
+        private string GetEtatAffichage(DeclarationStatus etat)
+        {
+            return etat switch
+            {
+                DeclarationStatus.Brouillon => "Brouillon",
+                DeclarationStatus.Recu => "Reçue",
+                DeclarationStatus.ValideeAutomatiquement => "Validée automatiquement",
+                DeclarationStatus.EnRevisionParAgent => "En révision par un agent",
+                DeclarationStatus.Traitee => "Traitée",
+                _ => "Inconnu"
+            };
+        }
+
+
     }
+
+
 
     // Classes de requête
     public class CreateDeclarationRequest
@@ -426,5 +735,26 @@ namespace RevenuQuebec.API.Controllers
     {
         public string Nom { get; set; }
         public string Url { get; set; }
+    }
+
+    // Ajoute cette classe dans DeclarationsController.cs
+    public class UpdateDeclarationRequest
+    {
+        public string Adresse { get; set; }
+        public string Email { get; set; }
+        public string Telephone { get; set; }
+        public string Citoyennete { get; set; }
+        public List<RevenuEmploiRequest> RevenusEmploi { get; set; } = new();
+        public List<AutreRevenuRequest> AutresRevenus { get; set; } = new();
+        public List<FichierRequest> Fichiers { get; set; } = new();
+        public bool ConfirmationExactitude { get; set; }
+        public int? CurrentStep { get; set; }
+    }
+
+    // Classe pour la requête d'ajout de statut test
+    public class AjouterStatutTestRequest
+    {
+        public int Etat { get; set; } // 1=Reçu, 2=ValidéeAuto, 3=EnRevision, 4=Traitée
+        public DateTime? DateEvenement { get; set; } // Optionnel : date personnalisée
     }
 }
