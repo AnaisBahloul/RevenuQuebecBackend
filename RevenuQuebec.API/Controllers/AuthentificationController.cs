@@ -92,7 +92,7 @@ namespace RevenuQuebec.API.Controllers
                 // Créer l'utilisateur COMME DANS TON ConsoleTestApp
                 var nouvelUtilisateur = new Utilisateur(
                     courriel: request.Courriel,
-                    motDePasse: request.MotDePasse, // En clair, comme tu veux
+                    motDePasse: request.MotDePasse, 
                     nom: request.Nom,
                     prenom: request.Prenom,
                     nas: request.NAS,

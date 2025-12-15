@@ -84,7 +84,7 @@ namespace RevenuQuebec.Core.Entities
             if (string.IsNullOrWhiteSpace(motDePasse))
                 throw new ArgumentException("Le mot de passe ne peut pas être vide");
 
-            if (motDePasse.Length <= 8)
+            if (motDePasse.Length < 8)
                 throw new ArgumentException("Le mot de passe doit contenir plus de 8 caractères");
 
             return true;
