@@ -29,7 +29,7 @@ namespace RevenuQuebec.Infrastructure.Migrations
                     Deductions = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     NetTax = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     AmountPayable = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AdjustmentNotes = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    AdjustmentNotes = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {

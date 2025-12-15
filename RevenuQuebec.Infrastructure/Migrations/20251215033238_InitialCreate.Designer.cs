@@ -12,7 +12,7 @@ using RevenuQuebec.Infrastructure;
 namespace RevenuQuebec.Infrastructure.Migrations
 {
     [DbContext(typeof(RevenuQuebecContext))]
-    [Migration("20251212080621_InitialCreate")]
+    [Migration("20251215033238_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -59,7 +59,6 @@ namespace RevenuQuebec.Infrastructure.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("AdjustmentNotes")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Amount")

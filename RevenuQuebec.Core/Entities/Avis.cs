@@ -28,19 +28,22 @@ namespace RevenuQuebec.Core.Entities
         public string NetTax { get; set; }
         public string AmountPayable { get; set; }
 
-        public List<string> AdjustmentNotes { get; set; } = new();
+        public List<string>? AdjustmentNotes { get; set; } = new();
 
-        
+
 
         public void AddNote(string note)
         {
             if (!string.IsNullOrWhiteSpace(note))
+            {
+                AdjustmentNotes ??= new List<string>();
                 AdjustmentNotes.Add(note);
+            }
         }
 
         public void RemoveNote(string note)
         {
-            if (AdjustmentNotes.Contains(note))
+            if (AdjustmentNotes != null && AdjustmentNotes.Contains(note))
                 AdjustmentNotes.Remove(note);
         }
 
